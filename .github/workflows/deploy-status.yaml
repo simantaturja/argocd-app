@@ -6,6 +6,7 @@ on:
 
 jobs:
   deploy-status:
+    needs: build
     runs-on: self-hosted
     steps:
       - name: Checkout code at commit
