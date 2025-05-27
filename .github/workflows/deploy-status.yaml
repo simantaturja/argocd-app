@@ -16,7 +16,6 @@ jobs:
       - name: Example step
         run: echo "Deploy status workflow triggered by API"
   deploy-status:
-    needs: build
     runs-on: self-hosted
     steps:
       - name: Checkout code at commit
