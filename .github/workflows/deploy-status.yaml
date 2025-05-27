@@ -1,0 +1,24 @@
+name: Deploy Status
+
+on:
+  repository_dispatch:
+    types: [deploy-status-trigger]
+
+jobs:
+  deploy-status:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ...existing steps for deployment status...
+
+      - name: Example step
+        run: echo "Deploy status workflow triggered by API and depends on build.yaml"
+
+# Note:
+# - To trigger this workflow, make a POST request to the GitHub API:
+#   POST /repos/{owner}/{repo}/dispatches
+#   with JSON body: { "event_type": "deploy-status-trigger" }
+# - The 'needs: build' requires that your build.yaml workflow defines a job with the id 'build'.
