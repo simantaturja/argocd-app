@@ -5,6 +5,16 @@ on:
     types: [deploy-status-trigger]
 
 jobs:
+  check:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code at commit
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.sha }}
+
+      - name: Example step
+        run: echo "Deploy status workflow triggered by API"
   deploy-status:
     needs: build
     runs-on: self-hosted
