@@ -24,11 +24,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:${{ github.sha }} .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:${{ github.sha }} .
 
       - name: Push Docker image (latest)
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app:${{ github.sha }}
 
       - name: Push Docker image (commit tag)
         run: |
