@@ -6,19 +6,18 @@ on:
 
 jobs:
   deploy-status:
-    needs: build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout code at commit
         uses: actions/checkout@v3
-
-      # ...existing steps for deployment status...
+        with:
+          ref: ${{ github.event.client_payload.sha }}
 
       - name: Example step
-        run: echo "Deploy status workflow triggered by API and depends on build.yaml"
+        run: echo "Deploy status workflow triggered by API after build and ArgoCD sync"
 
 # Note:
 # - To trigger this workflow, make a POST request to the GitHub API:
 #   POST /repos/{owner}/{repo}/dispatches
 #   with JSON body: { "event_type": "deploy-status-trigger" }
-# - The 'needs: build' requires that your build.yaml workflow defines a job with the id 'build'.
+# - The 'needs: build' requirement has been removed. This workflow no longer depends on the build.yaml workflow.
