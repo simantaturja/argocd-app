@@ -51,6 +51,7 @@ jobs:
           score-k8s generate score.yaml \
             --image turjacefalo/fastapi-app:${SHORT_SHA} \
             --output ../manifests-score/k8s-score-manifests.yaml
+          cd ..
 
       - name: Commit and push updated deployment.yaml
         run: |
