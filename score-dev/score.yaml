@@ -1,0 +1,28 @@
+apiVersion: score.dev/v1b1
+metadata:
+  name: fastapi-app
+containers:
+  main:
+    image: .
+    resources:
+      limits:
+        memory: 200Mi
+        cpu: 50m
+      requests:
+        memory: 50Mi
+        cpu: 10m
+    livenessProbe:
+      httpGet:
+        path: /status
+        port: 8080
+    readinessProbe:
+      httpGet:
+        path: /status
+        port: 8080
+service:
+  ports:
+    web:
+      port: 8080
+      # This is the external service port. The targetPort would implicitly be 3000
+      # as defined by the container's internal listening port for the probes.
+      # Score handles this mapping during implementation.

@@ -1,0 +1,96 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+    annotations:
+        k8s.score.dev/workload-name: fastapi-app
+    creationTimestamp: null
+    labels:
+        app.kubernetes.io/instance: fastapi-app-4d1c0fdf08
+        app.kubernetes.io/managed-by: score-k8s
+        app.kubernetes.io/name: fastapi-app
+    name: fastapi-app
+spec:
+    ports:
+        - name: web
+          port: 8080
+          protocol: TCP
+          targetPort: 8080
+    selector:
+        app.kubernetes.io/instance: fastapi-app-4d1c0fdf08
+status:
+    loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    annotations:
+        k8s.score.dev/workload-name: fastapi-app
+    creationTimestamp: null
+    labels:
+        app.kubernetes.io/instance: fastapi-app-4d1c0fdf08
+        app.kubernetes.io/managed-by: score-k8s
+        app.kubernetes.io/name: fastapi-app
+    name: fastapi-app
+spec:
+    selector:
+        matchLabels:
+            app.kubernetes.io/instance: fastapi-app-4d1c0fdf08
+    strategy: {}
+    template:
+        metadata:
+            annotations:
+                k8s.score.dev/workload-name: fastapi-app
+            creationTimestamp: null
+            labels:
+                app.kubernetes.io/instance: fastapi-app-4d1c0fdf08
+                app.kubernetes.io/managed-by: score-k8s
+                app.kubernetes.io/name: fastapi-app
+        spec:
+            affinity:
+                affinity:
+                    podAntiAffinity:
+                        preferredDuringSchedulingIgnoredDuringExecution:
+                            - podAffinityTerm:
+                                labelSelector:
+                                    matchExpressions:
+                                        - key: name
+                                          operator: In
+                                          values:
+                                            - fastapi-app
+                                topologyKey: kubernetes.io/hostname
+                              weight: 100
+            containers:
+                - image: fastapi-app:latest
+                  livenessProbe:
+                    failureThreshold: 20
+                    initialDelaySeconds: 15
+                    periodSeconds: 5
+                    timeoutSeconds: 5
+                  name: main
+                  readinessProbe:
+                    failureThreshold: 20
+                    initialDelaySeconds: 15
+                    periodSeconds: 5
+                    timeoutSeconds: 5
+                  resources:
+                    limits:
+                        cpu: 50m
+                        memory: 200Mi
+                    requests:
+                        cpu: 10m
+                        memory: 50Mi
+                  securityContext:
+                    allowPrivilegeEscalation: false
+                  startupProbe:
+                    failureThreshold: 20
+                    httpGet:
+                        path: /status
+                        port: 8080
+                    initialDelaySeconds: 15
+                    periodSeconds: 5
+                    timeoutSeconds: 5
+            securityContext:
+                runAsGroup: 3000
+                runAsUser: 1000
+status: {}

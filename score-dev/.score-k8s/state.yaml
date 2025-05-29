@@ -1,0 +1,34 @@
+workloads:
+  fastapi-app:
+    spec:
+      apiVersion: score.dev/v1b1
+      containers:
+        main:
+          image: fastapi-app:latest
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+          resources:
+            limits:
+              cpu: 50m
+              memory: 200Mi
+            requests:
+              cpu: 10m
+              memory: 50Mi
+      metadata:
+        name: fastapi-app
+      service:
+        ports:
+          web:
+            port: 8080
+    file: score.yaml
+    instance_suffix: -4d1c0fdf08
+resources: {}
+shared_state: {}
+patching_templates:
+  - "{{ range $i, $m := .Manifests }}\n{{ if eq $m.kind \"Deployment\" }}\n- op: set\n  path: {{ $i }}.spec.template.spec.affinity\n  value:\n      affinity:\n        podAntiAffinity:\n          preferredDuringSchedulingIgnoredDuringExecution:\n          - weight: 100\n            podAffinityTerm:\n              labelSelector:\n                matchExpressions:\n                - key: name\n                  operator: In\n                  values:\n                  - fastapi-app\n              topologyKey: \"kubernetes.io/hostname\"\n- op: set\n  path: {{ $i }}.spec.template.spec.securityContext\n  value:\n    runAsUser: 1000\n    runAsGroup: 3000\n{{ range $cname, $_ := $m.spec.template.spec.containers }}\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.securityContext\n  value:\n    allowPrivilegeEscalation: false\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.startupProbe\n  value:\n    httpGet:\n      path: /status\n      port: 8080 \n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.livenessProbe\n  value:\n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.readinessProbe\n  value:\n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n\n\n{{ end }}\n{{ end }}\n{{ end }}\n"
