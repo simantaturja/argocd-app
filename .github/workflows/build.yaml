@@ -46,6 +46,7 @@ jobs:
       - run: score-k8s --version
       - name: Generate updated manifests
         run: |
+          cd score-dev
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-6)
           score-k8s generate score.yaml \
             --image turjacefalo/fastapi-app:${SHORT_SHA} \
