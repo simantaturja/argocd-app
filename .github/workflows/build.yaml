@@ -44,8 +44,6 @@ jobs:
           version: latest
           token: ${{ secrets.GITHUB_TOKEN }}
       - run: score-k8s --version
-        with:
-          score_version: v0.2.0
       - name: Generate updated manifests
         run: |
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-6)
