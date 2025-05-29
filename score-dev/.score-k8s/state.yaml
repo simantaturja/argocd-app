@@ -27,8 +27,44 @@ workloads:
           web:
             port: 8080
     file: score.yaml
-    instance_suffix: -4d1c0fdf08
+    instance_suffix: -e8e7afd9e5
 resources: {}
 shared_state: {}
 patching_templates:
-  - "{{ range $i, $m := .Manifests }}\n{{ if eq $m.kind \"Deployment\" }}\n- op: set\n  path: {{ $i }}.spec.template.spec.affinity\n  value:\n      affinity:\n        podAntiAffinity:\n          preferredDuringSchedulingIgnoredDuringExecution:\n          - weight: 100\n            podAffinityTerm:\n              labelSelector:\n                matchExpressions:\n                - key: name\n                  operator: In\n                  values:\n                  - fastapi-app\n              topologyKey: \"kubernetes.io/hostname\"\n- op: set\n  path: {{ $i }}.spec.template.spec.securityContext\n  value:\n    runAsUser: 1000\n    runAsGroup: 3000\n{{ range $cname, $_ := $m.spec.template.spec.containers }}\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.securityContext\n  value:\n    allowPrivilegeEscalation: false\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.startupProbe\n  value:\n    httpGet:\n      path: /status\n      port: 8080 \n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.livenessProbe\n  value:\n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.readinessProbe\n  value:\n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n\n\n{{ end }}\n{{ end }}\n{{ end }}\n"
+  - |
+    {{ range $i, $m := .Manifests }}
+    {{ if eq $m.kind "Deployment" }}
+    - op: set
+      path: {{ $i }}.spec.template.spec.affinity
+      value:
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                      - fastapi-app
+                  topologyKey: "kubernetes.io/hostname"
+    {{ end }}
+    {{ end }}
+  - |
+    {{ range $i, $m := .Manifests }}
+    {{ if eq $m.kind "Deployment" }}
+    - op: set
+      path: {{ $i }}.spec.template.spec.securityContext
+      value:
+        runAsUser: 1000
+        runAsGroup: 3000
+    {{ range $cname, $_ := $m.spec.template.spec.containers }}
+    - op: set
+      path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.securityContext
+      value:
+        allowPrivilegeEscalation: false
+    {{ end }}
+    {{ end }}
+    {{ end }}
+  - "{{ range $i, $m := .Manifests }}\n{{ if eq $m.kind \"Deployment\" }}\n{{ range $cname, $_ := $m.spec.template.spec.containers }}\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.startupProbe\n  value:\n    httpGet:\n      path: /status\n      port: 8080 \n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n- op: set\n  path: {{ $i }}.spec.template.spec.containers.{{ $cname }}.livenessProbe\n  value:\n    httpGet:\n      path: /status\n      port: 8080 \n    initialDelaySeconds: 15\n    failureThreshold: 20\n    periodSeconds: 5\n    timeoutSeconds: 5\n{{ end }}\n{{ end }}\n{{ end }}\n"

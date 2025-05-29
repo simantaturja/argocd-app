@@ -37,10 +37,21 @@ jobs:
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-6)
           docker push turjacefalo/fastapi-app:${SHORT_SHA}
 
-      - name: Update deployment.yaml with new image tag
+      - name: Setup Score
+        uses: score-spec/setup-score@v2
+        with:
+          file: score-k8s
+          version: latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: score-k8s --version
+        with:
+          score_version: v0.2.0
+      - name: Generate updated manifests
         run: |
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-6)
-          sed -i "s|\(image: .*/fastapi-app:\).*|\1${SHORT_SHA}|" manifests/deployment.yaml
+          score-k8s generate score.yaml \
+            --image turjacefalo/fastapi-app:${SHORT_SHA} \
+            --output ../manifests-score/k8s-score-manifests.yaml
 
       - name: Commit and push updated deployment.yaml
         run: |
